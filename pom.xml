@@ -4,41 +4,93 @@
   <artifactId>root</artifactId>
   <version>0.1.0-GIT</version>
   <packaging>pom</packaging>
-	
+
 	<repositories>
 		<repository>
 			<id>aplos-repo</id>
 			<name>Aplos Systems Maven Repository</name>
-			<url>http://maven.aplossystems.co.uk/nexus/content/groups/public</url>
+			<url>http://localhost:8090/nexus/content/groups/public</url>
 		</repository>
 	</repositories>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.aspectj</groupId>
-				<artifactId>aspectjrt</artifactId>
-				<version>${aspectj.runtime.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.aspectj</groupId>
-				<artifactId>aspectjtools</artifactId>
-				<version>${aspectj.runtime.version}</version>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+	<dependencies>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjrt</artifactId>
+			<version>${aspectj.runtime.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjtools</artifactId>
+			<version>${aspectj.runtime.version}</version>
+		</dependency>
+	</dependencies>
 	
 	<build>
 		<pluginManagement>
 			<plugins>
 				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>aspectj-maven-plugin</artifactId>
+					<version>1.11</version>
+					<configuration>
+						<complianceLevel>${compiler.version}</complianceLevel>
+						<includes>
+							<include>**/*.java</include>
+							<include>**/*.aj</include>
+						</includes>
+						<aspectDirectory>src/main/aspect</aspectDirectory>
+						<testAspectDirectory>src/test/aspect</testAspectDirectory>
+						<XaddSerialVersionUID>true</XaddSerialVersionUID>
+						<showWeaveInfo>true</showWeaveInfo>
+					</configuration>
+					<executions>
+						<execution>
+							<id>compile_with_aspectj</id>
+							<phase>compile</phase>
+							<goals>
+								<goal>compile</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>test-compile_with_aspectj</id>
+							<phase>test-compile</phase>
+							<goals>
+								<goal>test-compile</goal>
+							</goals>
+						</execution>
+					</executions>
+					<dependencies>
+						<dependency>
+							<groupId>org.aspectj</groupId>
+							<artifactId>aspectjrt</artifactId>
+							<version>${aspectj.runtime.version}</version>
+						</dependency>
+						<dependency>
+							<groupId>org.aspectj</groupId>
+							<artifactId>aspectjtools</artifactId>
+							<version>${aspectj.runtime.version}</version>
+						</dependency>
+					</dependencies>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>2.3.2</version>
 					<configuration>
-						<source>1.7</source>
-						<target>1.7</target>
+						<source>${compiler.version}</source>
+						<target>${compiler.version}</target>
 					</configuration>
+					<executions>
+						<!-- You need to disable the maven compiler plugin otherwise it will break the build because
+						it cannot see the methods added by aspectJ in the later steps.  There's also the option of
+						changing the compile time of the aspectJ compiler to process-sources but this didn't work
+						for me-->
+						<execution>
+							<id>default-compile</id>
+							<phase>none</phase>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -63,6 +115,7 @@
 		</pluginManagement>
 	</build>
 	<properties>
-		<aspectj.runtime.version>1.7.3</aspectj.runtime.version>
+		<compiler.version>1.8</compiler.version>
+		<aspectj.runtime.version>1.8.9</aspectj.runtime.version>
 	</properties>
 </project>
